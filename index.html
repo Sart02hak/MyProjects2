@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vintage Gallery App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Libre Baskerville', serif;
+      background: #f5f1e8;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(to right, #d1a66d, #8e5d3f);
+      color: #fff8e1;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+    }
+
+    #searchBar {
+      margin-top: 15px;
+      padding: 12px;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      background-color: #fff8e1;
+      color: #5c3a21;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 25px;
+      flex-grow: 1;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      cursor: pointer;
+      filter: sepia(0.4) contrast(0.9) brightness(1.05) saturate(0.6);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      filter: sepia(0.6) contrast(0.85) brightness(1.1) saturate(0.5);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin: 20px 0;
+    }
+
+    .pagination button {
+      padding: 10px 25px;
+      border: none;
+      background-color: #8e5d3f;
+      color: #fff8e1;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+
+    .pagination button:hover {
+      background-color: #6c3c2c;
+    }
+
+    footer {
+      background: #3d2b1f;
+      color: #f8efe0;
+      text-align: center;
+      padding: 12px;
+      font-size: 0.9rem;
+    }
+
+    .lightbox {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(255, 245, 230, 0.4);
+    }
+
+    /* Vintage icon example for search */
+    ::placeholder {
+      font-style: italic;
+      color: #a36c48;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🧳 Vintage Gallery</h1>
+    <input id="searchBar" type="text" placeholder="🔍 Search vintage vibes (e.g., retro, 70s, sepia)" />
+  </header>
+
+  <div class="gallery" id="gallery"></div>
+
+  <div class="pagination">
+    <button onclick="prevPage()">⬅️ Back in Time</button>
+    <button onclick="nextPage()">Forward ➡️</button>
+  </div>
+
+  <footer>
+    © 2025 Sarthak Thatte | Vintage Gallery App
+  </footer>
+
+  <div class="lightbox" id="lightbox" onclick="hideLightbox()">
+    <img id="lightbox-img" src="" alt="Preview" />
+  </div>
+
+  <script>
+    const gallery = document.getElementById("gallery");
+    const searchBar = document.getElementById("searchBar");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+
+    let page = 1;
+    let keyword = "vintage";
+
+    async function loadImages() {
+      gallery.innerHTML = "";
+
+      const response = await fetch(`https://api.pexels.com/v1/search?query=${keyword}&per_page=9&page=${page}`, {
+        headers: {
+          Authorization: 'zVg6Jral74spueYW30lkCz9TvViDbGbldwtgDa5egFnwVIx6HVvIEyj1'
+        }
+      });
+
+      const data = await response.json();
+
+      data.photos.forEach(photo => {
+        const img = document.createElement("img");
+        img.src = photo.src.medium;
+        img.alt = keyword;
+        img.onclick = () => showLightbox(photo.src.large);
+        gallery.appendChild(img);
+      });
+    }
+
+    function nextPage() {
+      page++;
+      loadImages();
+    }
+
+    function prevPage() {
+      if (page > 1) {
+        page--;
+        loadImages();
+      }
+    }
+
+    function showLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.style.display = "flex";
+    }
+
+    function hideLightbox() {
+      lightbox.style.display = "none";
+    }
+
+    searchBar.addEventListener("input", () => {
+      keyword = searchBar.value.trim() || "vintage";
+      page = 1;
+      loadImages();
+    });
+
+    window.onload = loadImages;
+  </script>
+</body>
+</html>
